@@ -58,6 +58,8 @@ public class App {
         
         //everytime we need to open session and Create a Transaction for any DB work
         try (Session session = HibernateUtil.getSessionFactory().openSession()) { 
+
+            //we can use session.get() to get 1 record but for multiple use createQuery
             List<Student> students = session.createQuery("FROM Student", Student.class).list();
             students.forEach(System.out::println); // Print each student using toString()
         } catch (Exception e) {
@@ -102,7 +104,7 @@ public class App {
 
             transaction.commit();
         } catch (Exception e) {
-            
+
             if (transaction != null) transaction.rollback();
             System.out.println("Error deleting student!");
         }
