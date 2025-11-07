@@ -32,27 +32,32 @@ public class App {
         System.out.println("\n=== Done ===");
     }
 
-    // ================== CREATE FUNCTION ==================
-    public static void createStudent(String firstName, String lastName, String email) {
-        Transaction transaction = null; // Used to commit or rollback DB changes
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction(); // Start DB transaction
+    public static void createStudent(String firstName, String lastName, String email) {
+        Transaction transaction = null; // used for atomicity so that either all data goes or none at all in case it stopped 
+        //at some point after inserrting some then it will remove those too
+       
+         //everytime we need to open session for any DB work
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {//SESSION -> It is the connection between Java and the database
+            transaction = session.beginTransaction(); // Start DB transaction //
 
             Student student = new Student(firstName, lastName, email); // Create student object
-            session.persist(student); // Save object into database
+            session.persist(student); //it tells hibernate that I want to save it in DB but dont actually save
+            transaction.commit(); // this actually saves data in DB
 
-            transaction.commit(); // Make changes permanent in DB
-            System.out.println("Created: " + student); // Print student details
+            System.out.println("Created: " + student);
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback(); // Undo if error happens
+
+            if (transaction != null) transaction.rollback(); //if any error then roll it back all updates
+
             System.out.println("Error while creating student!");
         }
     }
 
-    // =================== READ FUNCTION ===================
     public static void getAllStudents() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        
+        //everytime we need to open session and Create a Transaction for any DB work
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) { 
             List<Student> students = session.createQuery("FROM Student", Student.class).list();
             students.forEach(System.out::println); // Print each student using toString()
         } catch (Exception e) {
@@ -60,10 +65,11 @@ public class App {
         }
     }
 
-    // ================== UPDATE FUNCTION ==================
+
     public static void updateStudent(int id, String newEmail) {
         Transaction transaction = null;
 
+         //everytime we need to open session and Create a Transaction for any DB work
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
@@ -81,10 +87,10 @@ public class App {
         }
     }
 
-    // ================== DELETE FUNCTION ==================
     public static void deleteStudent(int id) {
         Transaction transaction = null;
-
+ 
+    //everytime we need to open session and Create a Transaction for any DB work
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
@@ -96,6 +102,7 @@ public class App {
 
             transaction.commit();
         } catch (Exception e) {
+            
             if (transaction != null) transaction.rollback();
             System.out.println("Error deleting student!");
         }
